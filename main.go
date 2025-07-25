@@ -311,25 +311,38 @@ func (m model) View() string {
 }
 
 func (m model) renderTasks(tasks []task.Task, title string) string {
-	if len(tasks) == 0 {
-		return fmt.Sprintf("No tasks found. Press ESC to return.")
-	}
-	sort.Slice(tasks, func(i, j int) bool {
-		return tasks[i].CreatedAt.Before(tasks[j].CreatedAt)
-	})
-	header := fmt.Sprintf("%-3s %-8s %-30s %-12s %-16s", "#", "STATUS", "DESCRIPTION", "DUE DATE", "CREATED")
-	s := titleStyle.Render(title) + "\n\n" + lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00BFFF")).Render(header) + "\n"
-	s += strings.Repeat("-", len(header)) + "\n"
-	for i, t := range tasks {
-		due := t.DueDate.Format("2006-01-02")
-		created := t.CreatedAt.Format("2006-01-02 15:04")
-		line := fmt.Sprintf("%-3d %-8s %-30s %-12s %-16s", i+1, t.Status, t.Description, due, created)
-		if t.Status == "done" {
-			line = doneStyle.Render(line)
-		}
-		s += line + "\n"
-	}
-	return s
+    if len(tasks) == 0 {
+        return "No tasks found. Press ESC to return."
+    }
+
+    // Calculate max lengths for each field
+    maxStatus, maxDesc := 0, 0
+    for _, t := range tasks {
+        if len(t.Status) > maxStatus {
+            maxStatus = len(t.Status)
+        }
+        if len(t.Description) > maxDesc {
+            maxDesc = len(t.Description)
+        }
+    }
+
+    s := titleStyle.Render(title) + "\n\n"
+    for i, t := range tasks {
+        line := fmt.Sprintf(
+            "[%d] STATUS: %-*s | DESC: %-*s | DUE: %s | CREATED: %s",
+            i+1,
+            maxStatus, t.Status,
+            maxDesc, t.Description,
+            t.DueDate.Format("2006-01-02"),
+            t.CreatedAt.Format("2006-01-02 15:04"),
+        )
+
+        if t.Status == "done" {
+            line = doneStyle.Render(line)
+        }
+        s += line + "\n"
+    }
+    return s
 }
 
 func (m model) renderSelection(title string) string {
