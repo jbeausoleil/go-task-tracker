@@ -39,6 +39,15 @@ var (
 	helpStyle     = lipgloss.NewStyle().Faint(true).Foreground(lipgloss.Color("7"))         // Light gray
 )
 
+var (
+	statusTodoStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true) // Bright green
+	statusInProgress = lipgloss.NewStyle().Foreground(lipgloss.Color("12")).Bold(true) // Bright blue
+	statusDoneStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Strikethrough(true)
+	descriptionStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Bold(true) // Bright white
+	dueDateStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))            // Yellow
+	createdDateStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("14"))            // Cyan
+)
+
 type model struct {
 	cursor    int
 	choices   []string
@@ -310,38 +319,33 @@ func (m model) View() string {
 }
 
 func (m model) renderTasks(tasks []task.Task, title string) string {
-    if len(tasks) == 0 {
-        return "No tasks found. Press ESC to return."
-    }
+	if len(tasks) == 0 {
+		return "No tasks found. Press ESC to return."
+	}
 
-    // Calculate max lengths for each field
-    maxStatus, maxDesc := 0, 0
-    for _, t := range tasks {
-        if len(t.Status) > maxStatus {
-            maxStatus = len(t.Status)
-        }
-        if len(t.Description) > maxDesc {
-            maxDesc = len(t.Description)
-        }
-    }
+	s := titleStyle.Render(title) + "\n\n"
+	for i, t := range tasks {
+		var status string
+		switch t.Status {
+		case "todo":
+			status = statusTodoStyle.Render(t.Status)
+		case "in-progress":
+			status = statusInProgress.Render(t.Status)
+		case "done":
+			status = statusDoneStyle.Render(t.Status)
+		}
 
-    s := titleStyle.Render(title) + "\n\n"
-    for i, t := range tasks {
-        line := fmt.Sprintf(
-            "[%d] STATUS: %-*s | DESC: %-*s | DUE: %s | CREATED: %s",
-            i+1,
-            maxStatus, t.Status,
-            maxDesc, t.Description,
-            t.DueDate.Format("2006-01-02"),
-            t.CreatedAt.Format("2006-01-02 15:04"),
-        )
+		line := fmt.Sprintf("[%d] STATUS: %s | DESC: %s | DUE: %s | CREATED: %s",
+			i+1,
+			status,
+			descriptionStyle.Render(t.Description),
+			dueDateStyle.Render(t.DueDate.Format("2006-01-02")),
+			createdDateStyle.Render(t.CreatedAt.Format("2006-01-02 15:04")),
+		)
 
-        if t.Status == "done" {
-            line = doneStyle.Render(line)
-        }
-        s += line + "\n"
-    }
-    return s
+		s += line + "\n"
+	}
+	return s
 }
 
 func (m model) renderSelection(title string) string {
