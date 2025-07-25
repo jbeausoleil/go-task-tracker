@@ -1,0 +1,39 @@
+# Binaries and build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+task-cli
+dist/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor directory (if you don't want to commit vendor)
+vendor/
+
+# Dependency directories
+pkg/
+bin/
+
+# IntelliJ / GoLand project files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Task storage (if you want to ignore runtime tasks.json)
+tasks.json
